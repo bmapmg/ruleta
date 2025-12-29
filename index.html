@@ -2,15 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruleta de Premios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ruleta Táctil</title>
     <style>
-        :root {
-            --primary-color: #e74c3c;
-            --secondary-color: #f1c40f;
-            --text-color: #2c3e50;
-        }
-
         body {
             display: flex;
             flex-direction: column;
@@ -18,27 +12,29 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f2f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+            touch-action: none; /* Evita que la pantalla se mueva al girar */
         }
 
         .wheel-container {
             position: relative;
-            width: 350px;
-            height: 350px;
+            width: 90vw;
+            max-width: 400px;
+            aspect-ratio: 1/1;
         }
 
-        /* Marcador (flecha) */
         .marker {
             position: absolute;
-            top: -20px;
+            top: -10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 40px solid var(--primary-color);
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #e74c3c;
             z-index: 10;
         }
 
@@ -46,73 +42,52 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            cursor: grab;
         }
 
-        #spin-btn {
-            margin-top: 30px;
-            padding: 15px 40px;
-            font-size: 1.2rem;
+        #result {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            height: 40px;
+            text-align: center;
+            color: #f1c40f;
             font-weight: bold;
-            color: white;
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px #c0392b;
-            transition: all 0.2s;
         }
 
-        #spin-btn:active {
-            box-shadow: 0 0 #c0392b;
-            transform: translateY(4px);
-        }
-
-        #spin-btn:disabled {
-            background-color: #95a5a6;
-            box-shadow: 0 4px #7f8c8d;
-            cursor: not-allowed;
-        }
-
-        h1 { color: var(--text-color); margin-bottom: 10px; }
-        #result { margin-top: 20px; font-weight: bold; font-size: 1.5rem; color: #27ae60; height: 30px; }
+        p { color: #888; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-    <h1>¡Gira y Gana!</h1>
-    
+    <p>Desliza para girar</p>
     <div class="wheel-container">
         <div class="marker"></div>
         <canvas id="wheelCanvas" width="500" height="500"></canvas>
     </div>
-
-    <button id="spin-btn">¡GIRAR!</button>
     <div id="result"></div>
 
     <script>
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
-        const btn = document.getElementById('spin-btn');
         const resultDiv = document.getElementById('result');
 
-        const prizes = [
-            "🎁 Descuento 10%", "⭐ 1 Punto", "🍦 Helado Gratis", 
-            "❌ Sigue intentando", "📱 Funda Móvil", "🎟️ Cupón Cine", 
-            "🍭 Dulce", "🚀 Bonus Especial"
-        ];
-
+        const prizes = ["🎁 Premiazo", "🍦 Helado", "⭐ 5 Puntos", "❌ Nada", "🎟️ Ticket", "🍬 Dulce", "🔥 Bonus", "💀 Casi"];
         const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#2ecc71', '#1abc9c', '#34495e'];
         
-        let currentRotation = 0;
         const totalSegments = prizes.length;
         const arc = 2 * Math.PI / totalSegments;
 
-        // Dibujar la ruleta
-        function drawWheel() {
+        let currentAngle = 0;
+        let isDragging = false;
+        let startAngle = 0;
+        let velocity = 0;
+        let lastAngle = 0;
+        let lastTime = 0;
+
+        function draw() {
+            ctx.clearRect(0, 0, 500, 500);
             prizes.forEach((prize, i) => {
-                const angle = i * arc;
+                const angle = i * arc + currentAngle;
                 ctx.beginPath();
                 ctx.fillStyle = colors[i];
                 ctx.moveTo(250, 250);
@@ -120,43 +95,83 @@
                 ctx.lineTo(250, 250);
                 ctx.fill();
 
-                // Texto
                 ctx.save();
                 ctx.translate(250, 250);
                 ctx.rotate(angle + arc / 2);
                 ctx.textAlign = "right";
                 ctx.fillStyle = "white";
-                ctx.font = "bold 20px Arial";
+                ctx.font = "bold 22px Arial";
                 ctx.fillText(prize, 230, 10);
                 ctx.restore();
             });
         }
 
-        drawWheel();
+        function getMouseAngle(ev) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - (rect.left + rect.width / 2);
+            const y = (ev.touches ? ev.touches[0].clientY : ev.clientY) - (rect.top + rect.height / 2);
+            return Math.atan2(y, x);
+        }
 
-        btn.addEventListener('click', () => {
-            btn.disabled = true;
+        // Iniciar toque
+        const startAction = (e) => {
+            isDragging = true;
+            velocity = 0;
             resultDiv.innerText = "";
-            
-            // Generar un giro aleatorio (mínimo 5 vueltas + ángulo extra)
-            const extraRotation = Math.floor(Math.random() * 360) + 1800; 
-            currentRotation += extraRotation;
-            
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            startAngle = getMouseAngle(e) - currentAngle;
+            lastTime = performance.now();
+        };
 
-            // Calcular el premio al terminar la animación (4 segundos)
-            setTimeout(() => {
-                btn.disabled = false;
-                
-                // Calcular qué segmento quedó arriba (teniendo en cuenta que el 0 rad es a la derecha)
-                const actualRotation = currentRotation % 360;
-                const segmentAngle = 360 / totalSegments;
-                // Ajuste de desfase para que el premio coincida con la flecha superior
-                const winningIndex = Math.floor(((360 - actualRotation + 270) % 360) / segmentAngle);
-                
-                resultDiv.innerText = "¡Ganaste: " + prizes[winningIndex] + "!";
-            }, 4000);
-        });
+        // Mover dedo
+        const moveAction = (e) => {
+            if (!isDragging) return;
+            const newAngle = getMouseAngle(e);
+            const now = performance.now();
+            
+            // Calcular velocidad para el impulso final
+            velocity = (newAngle - startAngle - currentAngle) / (now - lastTime);
+            
+            currentAngle = newAngle - startAngle;
+            lastTime = now;
+            draw();
+        };
+
+        // Soltar
+        const endAction = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            // Animación de frenado (fricción)
+            const friction = 0.98;
+            function animate() {
+                if (Math.abs(velocity) < 0.001) {
+                    calculatePrize();
+                    return;
+                }
+                currentAngle += velocity * 16; // Multiplicador de velocidad
+                velocity *= friction;
+                draw();
+                requestAnimationFrame(animate);
+            }
+            animate();
+        };
+
+        function calculatePrize() {
+            // El marcador está arriba (270 grados o -PI/2 radianes)
+            const normalizedAngle = (currentAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            const winningIndex = Math.floor(((2 * Math.PI - normalizedAngle + (1.5 * Math.PI)) % (2 * Math.PI)) / arc);
+            resultDiv.innerText = "¡Ganaste: " + prizes[winningIndex] + "!";
+        }
+
+        canvas.addEventListener('mousedown', startAction);
+        window.addEventListener('mousemove', moveAction);
+        window.addEventListener('mouseup', endAction);
+
+        canvas.addEventListener('touchstart', startAction);
+        window.addEventListener('touchmove', moveAction);
+        window.addEventListener('touchend', endAction);
+
+        draw();
     </script>
 </body>
 </html>
