@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta de Premios</title>
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #f1c40f;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+        }
+
+        /* Marcador (flecha) */
+        .marker {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid var(--primary-color);
+            z-index: 10;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+        }
+
+        #spin-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #c0392b;
+            transition: all 0.2s;
+        }
+
+        #spin-btn:active {
+            box-shadow: 0 0 #c0392b;
+            transform: translateY(4px);
+        }
+
+        #spin-btn:disabled {
+            background-color: #95a5a6;
+            box-shadow: 0 4px #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        h1 { color: var(--text-color); margin-bottom: 10px; }
+        #result { margin-top: 20px; font-weight: bold; font-size: 1.5rem; color: #27ae60; height: 30px; }
+    </style>
+</head>
+<body>
+
+    <h1>¡Gira y Gana!</h1>
+    
+    <div class="wheel-container">
+        <div class="marker"></div>
+        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <button id="spin-btn">¡GIRAR!</button>
+    <div id="result"></div>
+
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const btn = document.getElementById('spin-btn');
+        const resultDiv = document.getElementById('result');
+
+        const prizes = [
+            "🎁 Descuento 10%", "⭐ 1 Punto", "🍦 Helado Gratis", 
+            "❌ Sigue intentando", "📱 Funda Móvil", "🎟️ Cupón Cine", 
+            "🍭 Dulce", "🚀 Bonus Especial"
+        ];
+
+        const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#2ecc71', '#1abc9c', '#34495e'];
+        
+        let currentRotation = 0;
+        const totalSegments = prizes.length;
+        const arc = 2 * Math.PI / totalSegments;
+
+        // Dibujar la ruleta
+        function drawWheel() {
+            prizes.forEach((prize, i) => {
+                const angle = i * arc;
+                ctx.beginPath();
+                ctx.fillStyle = colors[i];
+                ctx.moveTo(250, 250);
+                ctx.arc(250, 250, 250, angle, angle + arc);
+                ctx.lineTo(250, 250);
+                ctx.fill();
+
+                // Texto
+                ctx.save();
+                ctx.translate(250, 250);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "white";
+                ctx.font = "bold 20px Arial";
+                ctx.fillText(prize, 230, 10);
+                ctx.restore();
+            });
+        }
+
+        drawWheel();
+
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            resultDiv.innerText = "";
+            
+            // Generar un giro aleatorio (mínimo 5 vueltas + ángulo extra)
+            const extraRotation = Math.floor(Math.random() * 360) + 1800; 
+            currentRotation += extraRotation;
+            
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Calcular el premio al terminar la animación (4 segundos)
+            setTimeout(() => {
+                btn.disabled = false;
+                
+                // Calcular qué segmento quedó arriba (teniendo en cuenta que el 0 rad es a la derecha)
+                const actualRotation = currentRotation % 360;
+                const segmentAngle = 360 / totalSegments;
+                // Ajuste de desfase para que el premio coincida con la flecha superior
+                const winningIndex = Math.floor(((360 - actualRotation + 270) % 360) / segmentAngle);
+                
+                resultDiv.innerText = "¡Ganaste: " + prizes[winningIndex] + "!";
+            }, 4000);
+        });
+    </script>
+</body>
+</html>
