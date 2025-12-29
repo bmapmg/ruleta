@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Ruleta Millonaria</title>
+    <title>Ruleta Premium</title>
     <style>
         body {
             display: flex;
@@ -12,32 +12,30 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background: #0f0c29;
-            background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
+            background: #050510;
             color: white;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
             touch-action: none;
         }
 
         .wheel-container {
             position: relative;
-            width: 95vw;
-            max-width: 450px;
+            width: 92vw;
+            max-width: 480px;
             aspect-ratio: 1/1;
-            margin-top: 10px;
         }
 
         .marker {
             position: absolute;
-            top: -15px;
+            top: -10px;
             left: 50%;
             transform: translateX(-50%);
             width: 0; height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 40px solid #ff0000;
-            filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 35px solid #ff3e3e;
+            filter: drop-shadow(0 0 8px rgba(255,0,0,0.8));
             z-index: 10;
         }
 
@@ -45,33 +43,30 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            border: 8px solid #ffd700;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            border: 6px solid #444;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
             cursor: grab;
         }
 
         #result {
-            margin-top: 25px;
-            font-size: 1.8rem;
-            min-height: 50px;
+            margin-top: 20px;
+            font-size: 2rem;
+            min-height: 60px;
             text-align: center;
-            color: #ffd700;
-            font-weight: bold;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+            font-weight: 900;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        h2 { margin: 0; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
-        p { color: #aaa; font-size: 0.8rem; margin-bottom: 5px; }
+        .info { color: #666; font-size: 0.8rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;}
     </style>
 </head>
 <body>
 
-    <h2>Ruleta de la Fortuna</h2>
-    <p>Desliza con fuerza para girar</p>
+    <div class="info">Desliza con fuerza la ruleta</div>
 
     <div class="wheel-container">
         <div class="marker"></div>
-        <canvas id="wheelCanvas" width="800" height="800"></canvas>
+        <canvas id="wheelCanvas" width="900" height="900"></canvas>
     </div>
 
     <div id="result"></div>
@@ -81,15 +76,35 @@
         const ctx = canvas.getContext('2d');
         const resultDiv = document.getElementById('result');
 
-        // Configuración de Premios (24 en total)
-        const prizes = [
-            "1 MILLÓN", "Vacío", "100 mil", "Vacío", "200 mil", "Vacío",
-            "100 mil", "Vacío", "500 mil", "Vacío", "100 mil", "Vacío",
-            "200 mil", "Vacío", "100 mil", "Vacío", "Vacío", "Vacío",
-            "Vacío", "Vacío", "Vacío", "Vacío", "Vacío", "Vacío"
+        // Configuración de Premios (24 en total, distribuidos aleatoriamente)
+        const wheelData = [
+            { label: "1 MILLÓN", color: "#FFD700", text: "#000", value: 1000000 }, // Oro
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "100 mil", color: "#E67E22", text: "#fff", value: 100000 }, // Naranja
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 },
+            { label: "200 mil", color: "#27AE60", text: "#fff", value: 200000 }, // Verde
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "100 mil", color: "#E67E22", text: "#fff", value: 100000 },
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 },
+            { label: "500 mil", color: "#00D2FF", text: "#000", value: 500000 }, // Cian/Plata
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "100 mil", color: "#E67E22", text: "#fff", value: 100000 },
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 },
+            { label: "200 mil", color: "#27AE60", text: "#fff", value: 200000 },
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "100 mil", color: "#E67E22", text: "#fff", value: 100000 },
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#1a1a2e", text: "#444", value: 0 },
+            { label: "Vacío", color: "#16213e", text: "#444", value: 0 }
         ];
 
-        const totalSegments = prizes.length;
+        const totalSegments = wheelData.length;
         const arc = 2 * Math.PI / totalSegments;
         let currentAngle = 0;
         let isDragging = false;
@@ -98,66 +113,60 @@
         let lastTime = 0;
         let lastSegmentIndex = -1;
 
-        // --- MOTOR DE SONIDO (Web Audio API) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playTickSound() {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.stop(audioCtx.currentTime + 0.05);
         }
 
         function playWinSound() {
-            const notes = [523.25, 659.25, 783.99, 1046.50]; // Acorde de Do mayor
-            notes.forEach((freq, i) => {
+            const freqs = [523, 659, 783, 1046];
+            freqs.forEach((f, i) => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.1));
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + (i * 0.1));
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (i * 0.1) + 0.5);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.4);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-                osc.start(audioCtx.currentTime + (i * 0.1));
-                osc.stop(audioCtx.currentTime + (i * 0.1) + 0.5);
+                osc.start(audioCtx.currentTime + i * 0.1);
+                osc.stop(audioCtx.currentTime + i * 0.1 + 0.4);
             });
         }
 
         function draw() {
-            ctx.clearRect(0, 0, 800, 800);
-            prizes.forEach((prize, i) => {
+            ctx.clearRect(0, 0, 900, 900);
+            wheelData.forEach((item, i) => {
                 const angle = i * arc + currentAngle;
                 
-                // Fondo
                 ctx.beginPath();
-                ctx.fillStyle = (prize === "Vacío") ? (i % 2 === 0 ? "#1e1e2f" : "#2a2a40") : "#ffd700";
-                ctx.moveTo(400, 400);
-                ctx.arc(400, 400, 400, angle, angle + arc);
-                ctx.lineTo(400, 400);
+                ctx.fillStyle = item.color;
+                ctx.moveTo(450, 450);
+                ctx.arc(450, 450, 440, angle, angle + arc);
+                ctx.lineTo(450, 450);
                 ctx.fill();
-                ctx.strokeStyle = "rgba(255,255,255,0.1)";
-                ctx.stroke();
 
-                // Texto
                 ctx.save();
-                ctx.translate(400, 400);
+                ctx.translate(450, 450);
                 ctx.rotate(angle + arc / 2);
                 ctx.textAlign = "right";
-                ctx.fillStyle = (prize === "Vacío") ? "#555" : "#000";
-                ctx.font = prize.includes("MILLÓN") ? "bold 26px Arial" : "bold 18px Arial";
-                ctx.fillText(prize, 380, 8);
+                ctx.fillStyle = item.text;
+                ctx.font = item.value >= 500000 ? "bold 24px sans-serif" : "16px sans-serif";
+                if (item.label !== "Vacío") {
+                    ctx.fillText(item.label, 420, 8);
+                }
                 ctx.restore();
             });
 
-            // Detectar si pasamos por un nuevo segmento para el sonido
             const currentSegment = Math.floor(((2 * Math.PI - (currentAngle % (2 * Math.PI))) % (2 * Math.PI)) / arc);
             if (currentSegment !== lastSegmentIndex && Math.abs(velocity) > 0.001) {
                 playTickSound();
@@ -165,12 +174,12 @@
             }
         }
 
-        function getMouseAngle(ev) {
+        const getMouseAngle = (ev) => {
             const rect = canvas.getBoundingClientRect();
             const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - (rect.left + rect.width / 2);
             const y = (ev.touches ? ev.touches[0].clientY : ev.clientY) - (rect.top + rect.height / 2);
             return Math.atan2(y, x);
-        }
+        };
 
         const startAction = (e) => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -194,9 +203,9 @@
         const endAction = () => {
             if (!isDragging) return;
             isDragging = false;
-            const friction = 0.985;
+            const friction = 0.988;
             function animate() {
-                if (Math.abs(velocity) < 0.0005) {
+                if (Math.abs(velocity) < 0.0004) {
                     calculatePrize();
                     return;
                 }
@@ -211,13 +220,15 @@
         function calculatePrize() {
             const normalizedAngle = (currentAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
             const winningIndex = Math.floor(((2 * Math.PI - normalizedAngle + (1.5 * Math.PI)) % (2 * Math.PI)) / arc);
-            const finalPrize = prizes[winningIndex];
+            const prize = wheelData[winningIndex];
             
-            if (finalPrize !== "Vacío") {
-                resultDiv.innerText = "¡GANASTE: $" + finalPrize + "!";
+            if (prize.value > 0) {
+                resultDiv.style.color = prize.color;
+                resultDiv.innerText = "GANASTE: $" + prize.label;
                 playWinSound();
             } else {
-                resultDiv.innerText = "Sigue intentando...";
+                resultDiv.style.color = "#666";
+                resultDiv.innerText = "Inténtalo de nuevo";
             }
         }
 
